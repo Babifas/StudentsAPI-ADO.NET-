@@ -22,7 +22,7 @@ namespace ADO.NET_EXP.Controllers
         {
           return Ok(_studentRepository.GetAllStudents());
         }
-        [HttpGet("OrderByAge")]
+        [HttpGet("OrderStudentByAge")]
         public IActionResult OrderedByAge()
         {
             return Ok(_studentRepository.OrderedByAge());
