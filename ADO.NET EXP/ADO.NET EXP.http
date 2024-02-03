@@ -1,0 +1,6 @@
+@ADO.NET_EXP_HostAddress = http://localhost:5084
+
+GET {{ADO.NET_EXP_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
