@@ -11,6 +11,8 @@ namespace ADO.NET_EXP.Model
         void UpdateStudents(Students students,int id);
         void DeleteStudents(int id);
         List<Students> OrderedByAge();
+        StudentsDetails StudentsDeatails(int studentid);
+        string updateAge(int id,int age);
     }
     public class StudentRepository:IStudentRepository
     {
@@ -18,6 +20,88 @@ namespace ADO.NET_EXP.Model
         public StudentRepository(IConfiguration configuration)
         {
             _connectionString = configuration["ConnectionStrings:DefaultConnection"];
+        }
+        public string updateAge(int id, int age)
+        {
+            using(SqlConnection conn=new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                SqlTransaction transaction = conn.BeginTransaction();
+                if (age > 10)
+                {
+                    SqlCommand cmd = new SqlCommand("UPDATE STUDENTS SET STUDENT_AGE=@age WHERE STUDENT_Id=@id",conn, transaction);
+                    cmd.Parameters.AddWithValue("@id", id);
+                    cmd.Parameters.AddWithValue("@age", age);
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    if(rowsAffected > 0)
+                    {
+                        SqlCommand cmd2 = new SqlCommand("INSERT INTO STUDENT_UPDATED_DETAILS (STUDENT_ID,UPDATED_DATE ) VALUES (@id,GETDATE())",conn,transaction);
+                        cmd2.Parameters.AddWithValue("@id", id);
+                        cmd2.ExecuteNonQuery();
+                        transaction.Commit();
+                        return "Updated Successfully";
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        return "User not found";
+                    }
+                   
+                }
+                else
+                {
+                    transaction.Rollback();
+                    return "Can not change age less than 10";
+                }
+               
+            }
+        }
+        public StudentsDetails StudentsDeatails(int studentid)
+        {
+            using (SqlConnection conn=new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                SqlCommand cmd = new SqlCommand("STUDENT_DETAILS", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@STUDENT_ID", studentid);
+                cmd.Parameters.Add("@FULL_NAME", SqlDbType.VarChar,50).Direction=ParameterDirection.Output;
+                cmd.Parameters.Add("@STUDENT_AGE",SqlDbType.Int).Direction=ParameterDirection.Output;
+                cmd.ExecuteNonQuery();
+                string fullname = cmd.Parameters["@FULL_NAME"].Value.ToString();
+                int studentage = Convert.ToInt32(cmd.Parameters["@STUDENT_AGE"].Value);
+                if (fullname==null )
+                {
+                    return null;
+                }
+                else
+                {
+                    return new StudentsDetails
+                    {
+
+                        Studentid = studentid,
+                        StudentName = fullname,
+                        StudentAge = studentage
+                    };
+                   
+                }
+
+            //    SqlDataReader reader = cmd.ExecuteReader();
+            //    if (reader.Read())
+            //    {
+            //        return new StudentsDetails
+            //        {
+            //            StudentId = studentid,
+            //            StudentName = reader.GetString(0),
+            //            StudentAge = reader.GetInt32(1)
+
+            //        };
+            //}
+            //    else
+            //{
+            //    return null;
+            //}
+
+        }
         }
         public List<Students> OrderedByAge()
         {

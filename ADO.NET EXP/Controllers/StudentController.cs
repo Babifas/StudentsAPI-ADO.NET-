@@ -14,8 +14,7 @@ namespace ADO.NET_EXP.Controllers
         {
             _studentRepository = studentRepository;
         }
-
-
+       
 
         [HttpGet]
         public IActionResult GetAllStudents()
@@ -36,6 +35,21 @@ namespace ADO.NET_EXP.Controllers
             }
             return Ok(_studentRepository.GetStudentById(id));
 
+        }
+        [HttpPut("UpdateAge/{id}", Name = "UpdateAge")]
+        public IActionResult UpdateAge([FromBody] int age, int id)
+        {
+
+            return Ok(_studentRepository.updateAge(id, age));
+        }
+        [HttpGet("StudentDetails/{studentid}", Name = "StudentDetails")]
+        public IActionResult StudentDetails(int studentid)
+        {
+            if (_studentRepository.StudentsDeatails == null)
+            {
+                return BadRequest("SORRY");
+            }
+            return Ok(_studentRepository.StudentsDeatails(studentid));
         }
         [HttpPost]
         public IActionResult AddStudent([FromBody]  Students students )
